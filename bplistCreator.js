@@ -4,7 +4,7 @@
 
 var streamBuffers = require("stream-buffers");
 
-var debug = true;
+var debug = false;
 
 module.exports = function(dicts) {
   var buffer = new streamBuffers.WritableStreamBuffer();
@@ -46,8 +46,11 @@ module.exports = function(dicts) {
     var strings = {};
     var entryId = 0;
     entries.forEach(function(entry) {
+      if (entry.id) {
+        return;
+      }
       if (entry.type === 'string') {
-        if (strings.hasOwnProperty(entry.value)) {
+        if (!entry.bplistOverride && strings.hasOwnProperty(entry.value)) {
           entry.type = 'stringref';
           entry.id = strings[entry.value];
         } else {
@@ -59,7 +62,7 @@ module.exports = function(dicts) {
     });
 
     entries = entries.filter(function(entry) {
-      return entry.type !== 'stringref';
+      return (entry.type !== 'stringref');
     });
   }
 
@@ -138,7 +141,9 @@ module.exports = function(dicts) {
 
   function writeDict(entry) {
     if (debug) {
-      console.log('0x' + buffer.size().toString(16), 'writeDict', '(id: ' + entry.id + ')');
+      var keysStr = entry.entryKeys.map(function(k) {return k.id;});
+      var valsStr = entry.entryValues.map(function(k) {return k.id;});
+      console.log('0x' + buffer.size().toString(16), 'writeDict', '(id: ' + entry.id + ')', '(keys: ' + keysStr + ')', '(values: ' + valsStr + ')');
     }
     writeIntHeader(0xD, entry.entryKeys.length);
     entry.entryKeys.forEach(function(entry) {

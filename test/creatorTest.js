@@ -80,6 +80,34 @@ function testFile(test, file) {
           value: dicts[0].NSHumanReadableCopyright
         };
       }
+      if (dicts && dicts[0] && dicts[0].hasOwnProperty('CFBundleExecutable')) {
+        dicts[0].CFBundleExecutable = {
+          bplistOverride: true,
+          type: 'string',
+          value: dicts[0].CFBundleExecutable
+        };
+      }
+      if (dicts && dicts[0] && dicts[0].CFBundleURLTypes && dicts[0].CFBundleURLTypes[0] && dicts[0].CFBundleURLTypes[0].hasOwnProperty('CFBundleURLSchemes')) {
+        dicts[0].CFBundleURLTypes[0].CFBundleURLSchemes[0] = {
+          bplistOverride: true,
+          type: 'string',
+          value: dicts[0].CFBundleURLTypes[0].CFBundleURLSchemes[0]
+        };
+      }
+      if (dicts && dicts[0] && dicts[0].hasOwnProperty('CFBundleDisplayName')) {
+        dicts[0].CFBundleDisplayName = {
+          bplistOverride: true,
+          type: 'string',
+          value: dicts[0].CFBundleDisplayName
+        };
+      }
+      if (dicts && dicts[0] && dicts[0].hasOwnProperty('DTPlatformBuild')) {
+        dicts[0].DTPlatformBuild = {
+          bplistOverride: true,
+          type: 'string',
+          value: dicts[0].DTPlatformBuild
+        };
+      }
 
       var buf = bplistCreator(dicts);
       compareBuffers(test, buf, fileData);
