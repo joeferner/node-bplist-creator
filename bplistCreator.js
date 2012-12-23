@@ -134,6 +134,9 @@ module.exports = function(dicts) {
     case 'string-utf16':
       writeString(entry);
       break;
+    case 'data':
+      writeData(entry);
+      break;
     default:
       throw new Error("unhandled entry type: " + entry.type);
     }
@@ -220,6 +223,14 @@ module.exports = function(dicts) {
     }
   }
 
+  function writeData(entry) {
+    if (debug) {
+      console.log('0x' + buffer.size().toString(16), 'writeData', entry.value, '(id: ' + entry.id + ')');
+    }
+    writeIntHeader('0x4', entry.value.length);
+    buffer.write(entry.value);
+  }
+
   function writeLong(l) {
     writeBytes(l, 8);
   }
@@ -279,6 +290,13 @@ function toEntries(dicts) {
 
   if (dicts instanceof Array) {
     return toEntriesArray(dicts);
+  } else if (dicts instanceof Buffer) {
+    return [
+      {
+        type: 'data',
+        value: dicts
+      }
+    ];
   } else if (typeof(dicts) === 'object') {
     return toEntriesObject(dicts);
   } else if (typeof(dicts) === 'string') {
