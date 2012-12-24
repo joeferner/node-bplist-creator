@@ -22,6 +22,11 @@ module.exports = {
     testFile(test, file);
   },
 
+  'binary data': function(test) {
+    var file = path.join(__dirname, "binaryData.bplist");
+    testFile(test, file);
+  },
+
   'airplay': function(test) {
     var file = path.join(__dirname, "airplay.bplist");
     testFile(test, file);
