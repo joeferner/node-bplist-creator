@@ -227,7 +227,7 @@ module.exports = function(dicts) {
     if (debug) {
       console.log('0x' + buffer.size().toString(16), 'writeData', entry.value, '(id: ' + entry.id + ')');
     }
-    writeIntHeader('0x4', entry.value.length);
+    writeIntHeader(0x4, entry.value.length);
     buffer.write(entry.value);
   }
 
