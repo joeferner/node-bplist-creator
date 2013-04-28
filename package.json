@@ -1,5 +1,5 @@
 {
-  "name": "node-bplist-creator",
+  "name": "bplist-creator",
   "version": "0.0.2",
   "description": "Binary Mac OS X Plist (property list) creator.",
   "main": "bplistCreator.js",
