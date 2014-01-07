@@ -6,6 +6,10 @@ var streamBuffers = require("stream-buffers");
 
 var debug = false;
 
+function Real(value) {
+  this.value = value;
+}
+
 module.exports = function(dicts) {
   var buffer = new streamBuffers.WritableStreamBuffer();
   buffer.write(new Buffer("bplist00"));
@@ -297,6 +301,13 @@ function toEntries(dicts) {
         value: dicts
       }
     ];
+  } else if (dicts instanceof Real) {
+    return [
+      {
+        type: 'double',
+        value: dicts.value
+      }
+    ];
   } else if (typeof(dicts) === 'object') {
     return toEntriesObject(dicts);
   } else if (typeof(dicts) === 'string') {
@@ -389,3 +400,5 @@ function computeIdSizeInBytes(numberOfIds) {
   }
   return 4;
 }
+
+module.exports.Real = Real;

@@ -1,6 +1,6 @@
 {
   "name": "bplist-creator",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Binary Mac OS X Plist (property list) creator.",
   "main": "bplistCreator.js",
   "scripts": {
