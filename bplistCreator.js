@@ -166,7 +166,7 @@ module.exports = function(dicts) {
       console.log('0x' + buffer.size().toString(16), 'writeNumber', entry.value, ' (type: ' + entry.type + ')', '(id: ' + entry.id + ')');
     }
 
-    if (entry.type !== 'double' && parseFloat(entry.value.toFixed(1)) == entry.value) {
+    if (entry.type !== 'double' && parseFloat(entry.value.toFixed()) == entry.value) {
       if (entry.value < 0) {
         writeByte(0x13);
         writeBytes(entry.value, 8);
