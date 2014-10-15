@@ -210,7 +210,7 @@ module.exports = function(dicts) {
     if (debug) {
       console.log('0x' + buffer.size().toString(16), 'writeString', entry.value, '(id: ' + entry.id + ')');
     }
-    if (entry.type === 'string-utf16') {
+    if (entry.type === 'string-utf16' || mustBeUtf16(entry.value)) {
       var utf16 = new Buffer(entry.value, 'ucs2');
       writeIntHeader(0x6, utf16.length / 2);
       // needs to be big endian so swap the bytes
@@ -221,7 +221,7 @@ module.exports = function(dicts) {
       }
       buffer.write(utf16);
     } else {
-      var utf8 = new Buffer(entry.value, 'utf8');
+      var utf8 = new Buffer(entry.value, 'ascii');
       writeIntHeader(0x5, utf8.length);
       buffer.write(utf8);
     }
@@ -284,6 +284,10 @@ module.exports = function(dicts) {
       buf[z++] = value >> (8 * i);
     }
     buffer.write(buf);
+  }
+
+  function mustBeUtf16(string) {
+    return Buffer.byteLength(string, 'utf8') != string.length;
   }
 };
 
