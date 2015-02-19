@@ -128,6 +128,9 @@ module.exports = function(dicts) {
     case 'double':
       writeNumber(entry);
       break;
+    case 'UID':
+      writeUID(entry);
+      break;
     case 'array':
       writeArray(entry);
       break;
@@ -187,6 +190,15 @@ module.exports = function(dicts) {
       writeByte(0x23);
       writeDouble(entry.value);
     }
+  }
+
+  function writeUID(entry) {
+    if (debug) {
+      console.log('0x' + buffer.size().toString(16), 'writeUID', entry.value, ' (type: ' + entry.type + ')', '(id: ' + entry.id + ')');
+    }
+
+    writeIntHeader(0x8, 0x0);
+    writeID(entry.value);
   }
 
   function writeArray(entry) {
@@ -313,7 +325,16 @@ function toEntries(dicts) {
       }
     ];
   } else if (typeof(dicts) === 'object') {
-    return toEntriesObject(dicts);
+    if (Object.keys(dicts).length == 1 && typeof(dicts.UID) === 'number') {
+      return [
+        {
+          type: 'UID',
+          value: dicts.UID
+        }
+      ]
+    } else {
+      return toEntriesObject(dicts);
+    }
   } else if (typeof(dicts) === 'string') {
     return [
       {
