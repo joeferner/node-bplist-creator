@@ -141,6 +141,9 @@ module.exports = function(dicts) {
     case 'string-utf16':
       writeString(entry);
       break;
+    case 'date':
+      writeDate(entry);
+      break;
     case 'data':
       writeData(entry);
       break;
