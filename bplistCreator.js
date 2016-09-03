@@ -141,12 +141,21 @@ module.exports = function(dicts) {
     case 'string-utf16':
       writeString(entry);
       break;
+    case 'date':
+      writeDate(entry);
+      break;
     case 'data':
       writeData(entry);
       break;
     default:
       throw new Error("unhandled entry type: " + entry.type);
     }
+  }
+
+  function writeDate(entry) {
+    writeByte(0x33);
+    var date = (Date.parse(entry.value)/1000) - 978307200
+    writeDouble(date)
   }
 
   function writeDict(entry) {
@@ -325,7 +334,14 @@ function toEntries(dicts) {
       }
     ];
   } else if (typeof(dicts) === 'object') {
-    if (Object.keys(dicts).length == 1 && typeof(dicts.UID) === 'number') {
+    if (dicts instanceof Date) {
+      return [
+        {
+          type: 'date',
+          value: dicts
+        }
+      ]
+    } else if (Object.keys(dicts).length == 1 && typeof(dicts.UID) === 'number') {
       return [
         {
           type: 'UID',
