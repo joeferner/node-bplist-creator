@@ -3,6 +3,7 @@
 // adapted from http://code.google.com/p/plist/source/browse/trunk/src/main/java/com/dd/plist/BinaryPropertyListWriter.java
 
 var streamBuffers = require("stream-buffers");
+var isBuffer = require("is-buffer");
 
 var debug = false;
 
@@ -319,7 +320,7 @@ function toEntries(dicts) {
 
   if (dicts instanceof Array) {
     return toEntriesArray(dicts);
-  } else if (dicts instanceof Buffer) {
+  } else if (isBuffer(dicts)) {
     return [
       {
         type: 'data',
