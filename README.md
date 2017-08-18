@@ -1,5 +1,5 @@
-bplist-parser
-=============
+bplist-creator
+==============
 
 Binary Mac OS X Plist (property list) creator.
 
