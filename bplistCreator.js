@@ -3,7 +3,6 @@
 // adapted from http://code.google.com/p/plist/source/browse/trunk/src/main/java/com/dd/plist/BinaryPropertyListWriter.java
 
 var streamBuffers = require("stream-buffers");
-var isBuffer = require("is-buffer");
 
 var debug = false;
 
@@ -182,7 +181,7 @@ module.exports = function(dicts) {
     if (entry.type !== 'double' && parseFloat(entry.value.toFixed()) == entry.value) {
       if (entry.value < 0) {
         writeByte(0x13);
-        writeBytes(entry.value, 8);
+        writeBytes(entry.value, 8, true);
       } else if (entry.value <= 0xff) {
         writeByte(0x10);
         writeBytes(entry.value, 1);
@@ -293,15 +292,19 @@ module.exports = function(dicts) {
     writeBytes(id, idSizeInBytes);
   }
 
-  function writeBytes(value, bytes) {
+  function writeBytes(value, bytes, is_signedint) {
     // write low-order bytes big-endian style
     var buf = new Buffer(bytes);
     var z = 0;
+    
     // javascript doesn't handle large numbers
-    while (bytes > 4) {
-      buf[z++] = 0;
-      bytes--;
+    if(!is_signedint) {
+      while (bytes > 4) {
+        buf[z++] = 0;
+        bytes--;
+      }
     }
+
     for (var i = bytes - 1; i >= 0; i--) {
       buf[z++] = value >> (8 * i);
     }
@@ -320,7 +323,7 @@ function toEntries(dicts) {
 
   if (dicts instanceof Array) {
     return toEntriesArray(dicts);
-  } else if (isBuffer(dicts)) {
+  } else if (dicts instanceof Buffer) {
     return [
       {
         type: 'data',
