@@ -192,7 +192,7 @@ module.exports = function(dicts) {
         writeByte(0x12);
         writeBytes(entry.value, 4);
       } else {
-        writeByte(0x13);
+        writeByte(0x14);
         writeBytes(entry.value, 8);
       }
     } else {
