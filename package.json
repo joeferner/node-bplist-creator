@@ -15,7 +15,7 @@
     "plist",
     "creator"
   ],
-  "author": "https://github.com/nearinfinity/node-bplist-parser.git",
+  "author": "Joe Ferner",
   "license": "MIT",
   "devDependencies": {
     "bplist-parser": "~0.1.0",
