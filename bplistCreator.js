@@ -296,7 +296,7 @@ module.exports = function(dicts) {
     // write low-order bytes big-endian style
     var buf = new Buffer(bytes);
     var z = 0;
-    
+
     // javascript doesn't handle large numbers
     if(!is_signedint) {
       while (bytes > 4) {
@@ -374,6 +374,13 @@ function toEntries(dicts) {
       {
         type: 'boolean',
         value: dicts
+      }
+    ];
+  } else if (typeof(dicts) === 'bigint') {
+    return [
+      {
+        type: 'number',
+        value: BigInt.asIntN(32, dicts)
       }
     ];
   } else {
