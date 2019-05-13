@@ -380,7 +380,7 @@ function toEntries(dicts) {
     return [
       {
         type: 'number',
-        value: BigInt.asIntN(32, dicts)
+        value: Number(BigInt.asIntN(32, dicts))
       }
     ];
   } else {
