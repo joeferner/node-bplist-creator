@@ -298,11 +298,9 @@ module.exports = function(dicts) {
     var z = 0;
 
     // javascript doesn't handle large numbers
-    if(!is_signedint) {
-      while (bytes > 4) {
-        buf[z++] = 0;
-        bytes--;
-      }
+    while (bytes > 4) {
+      buf[z++] = is_signedint ? 0xff : 0;
+      bytes--;
     }
 
     for (var i = bytes - 1; i >= 0; i--) {
