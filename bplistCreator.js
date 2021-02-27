@@ -12,7 +12,7 @@ function Real(value) {
 
 module.exports = function(dicts) {
   var buffer = new streamBuffers.WritableStreamBuffer();
-  buffer.write(new Buffer("bplist00"));
+  buffer.write(Buffer.from("bplist00"));
 
   if (debug) {
     console.log('create', require('util').inspect(dicts, false, 10));
@@ -75,7 +75,7 @@ module.exports = function(dicts) {
       console.log('0x' + buffer.size().toString(16), 'writeTrailer');
     }
     // 6 null bytes
-    buffer.write(new Buffer([0, 0, 0, 0, 0, 0]));
+    buffer.write(Buffer.from([0, 0, 0, 0, 0, 0]));
 
     // size of an offset
     if (debug) {
@@ -178,7 +178,13 @@ module.exports = function(dicts) {
       console.log('0x' + buffer.size().toString(16), 'writeNumber', entry.value, ' (type: ' + entry.type + ')', '(id: ' + entry.id + ')');
     }
 
-    if (entry.type !== 'double' && parseFloat(entry.value.toFixed()) == entry.value) {
+    if (typeof entry.value === 'bigint') {
+      var width = 16;
+      var hex = entry.value.toString(width);
+      var buf = Buffer.from(hex.padStart(width * 2, '0').slice(0, width * 2), 'hex');
+      writeByte(0x14);
+      buffer.write(buf);
+    } else if (entry.type !== 'double' && parseFloat(entry.value).toFixed() == entry.value) {
       if (entry.value < 0) {
         writeByte(0x13);
         writeBytes(entry.value, 8, true);
@@ -192,7 +198,7 @@ module.exports = function(dicts) {
         writeByte(0x12);
         writeBytes(entry.value, 4);
       } else {
-        writeByte(0x14);
+        writeByte(0x13);
         writeBytes(entry.value, 8);
       }
     } else {
@@ -232,7 +238,7 @@ module.exports = function(dicts) {
       console.log('0x' + buffer.size().toString(16), 'writeString', entry.value, '(id: ' + entry.id + ')');
     }
     if (entry.type === 'string-utf16' || mustBeUtf16(entry.value)) {
-      var utf16 = new Buffer(entry.value, 'ucs2');
+      var utf16 = Buffer.from(entry.value, 'ucs2');
       writeIntHeader(0x6, utf16.length / 2);
       // needs to be big endian so swap the bytes
       for (var i = 0; i < utf16.length; i += 2) {
@@ -242,7 +248,7 @@ module.exports = function(dicts) {
       }
       buffer.write(utf16);
     } else {
-      var utf8 = new Buffer(entry.value, 'ascii');
+      var utf8 = Buffer.from(entry.value, 'ascii');
       writeIntHeader(0x5, utf8.length);
       buffer.write(utf8);
     }
@@ -261,11 +267,11 @@ module.exports = function(dicts) {
   }
 
   function writeByte(b) {
-    buffer.write(new Buffer([b]));
+    buffer.write(Buffer.from([b]));
   }
 
   function writeDouble(v) {
-    var buf = new Buffer(8);
+    var buf = Buffer.alloc(8);
     buf.writeDoubleBE(v, 0);
     buffer.write(buf);
   }
@@ -294,15 +300,13 @@ module.exports = function(dicts) {
 
   function writeBytes(value, bytes, is_signedint) {
     // write low-order bytes big-endian style
-    var buf = new Buffer(bytes);
+    var buf = Buffer.alloc(bytes);
     var z = 0;
 
     // javascript doesn't handle large numbers
-    if(!is_signedint) {
-      while (bytes > 4) {
-        buf[z++] = 0;
-        bytes--;
-      }
+    while (bytes > 4) {
+      buf[z++] = is_signedint ? 0xff : 0;
+      bytes--;
     }
 
     for (var i = bytes - 1; i >= 0; i--) {
@@ -380,7 +384,7 @@ function toEntries(dicts) {
     return [
       {
         type: 'number',
-        value: Number(BigInt.asIntN(32, dicts))
+        value: dicts
       }
     ];
   } else {
