@@ -178,7 +178,13 @@ module.exports = function(dicts) {
       console.log('0x' + buffer.size().toString(16), 'writeNumber', entry.value, ' (type: ' + entry.type + ')', '(id: ' + entry.id + ')');
     }
 
-    if (entry.type !== 'double' && parseFloat(entry.value.toFixed()) == entry.value) {
+    if (typeof entry.value === 'bigint') {
+      var width = 16;
+      var hex = entry.value.toString(width);
+      var buf = Buffer.from(hex.padStart(width * 2, '0').slice(0, width * 2), 'hex');
+      writeByte(0x14);
+      buffer.write(buf);
+    } else if (entry.type !== 'double' && parseFloat(entry.value).toFixed() == entry.value) {
       if (entry.value < 0) {
         writeByte(0x13);
         writeBytes(entry.value, 8, true);
@@ -192,7 +198,7 @@ module.exports = function(dicts) {
         writeByte(0x12);
         writeBytes(entry.value, 4);
       } else {
-        writeByte(0x14);
+        writeByte(0x13);
         writeBytes(entry.value, 8);
       }
     } else {
@@ -378,7 +384,7 @@ function toEntries(dicts) {
     return [
       {
         type: 'number',
-        value: Number(BigInt.asIntN(32, dicts))
+        value: dicts
       }
     ];
   } else {
