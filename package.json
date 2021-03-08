@@ -18,11 +18,11 @@
   "author": "Joe Ferner",
   "license": "MIT",
   "devDependencies": {
-    "bplist-parser": "~0.1.0",
-    "is-buffer": "1.1.4",
-    "nodeunit": "0.9.1"
+    "bplist-parser": "0.3.0",
+    "is-buffer": "1.1.x",
+    "nodeunit": "0.9.x"
   },
   "dependencies": {
-    "stream-buffers": "~2.2.0"
+    "stream-buffers": "2.2.x"
   }
 }
