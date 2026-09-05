@@ -1,21 +1,20 @@
-'use strict';
-
 // adapted from http://code.google.com/p/plist/source/browse/trunk/src/main/java/com/dd/plist/BinaryPropertyListWriter.java
 
-var streamBuffers = require("stream-buffers");
+import util from 'node:util';
+import streamBuffers from 'stream-buffers';
 
 var debug = false;
 
-function Real(value) {
+export function Real(value) {
   this.value = value;
 }
 
-module.exports = function(dicts) {
+export default function bplistCreator(dicts) {
   var buffer = new streamBuffers.WritableStreamBuffer();
   buffer.write(Buffer.from("bplist00"));
 
   if (debug) {
-    console.log('create', require('util').inspect(dicts, false, 10));
+    console.log('create', util.inspect(dicts, false, 10));
   }
 
   var entries = toEntries(dicts);
@@ -32,7 +31,7 @@ module.exports = function(dicts) {
   entries.forEach(function(entry, entryIdx) {
     offsets[entryIdx] = buffer.size();
     if (!entry) {
-      buffer.write(0x00);
+      buffer.write(Buffer.from([0x00]));
     } else {
       write(entry);
     }
@@ -348,7 +347,7 @@ module.exports = function(dicts) {
   function mustBeUtf16(string) {
     return Buffer.byteLength(string, 'utf8') != string.length;
   }
-};
+}
 
 function toEntries(dicts) {
   if (dicts.bplistOverride) {
@@ -487,4 +486,6 @@ function computeIdSizeInBytes(numberOfIds) {
   return 4;
 }
 
-module.exports.Real = Real;
+// Kept as a property of the default export so CommonJS consumers can continue
+// to reach it via `require('bplist-creator').Real`.
+bplistCreator.Real = Real;
