@@ -1,6 +1,6 @@
 {
   "name": "bplist-creator",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Binary Mac OS X Plist (property list) creator.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -25,9 +25,10 @@
   "scripts": {
     "build": "node build.js",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "smoke": "npm run build && node smoke.cjs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run typecheck && npm run build"
   },
   "repository": {
     "type": "git",
@@ -45,10 +46,14 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.x",
+    "@types/node": "26.4.x",
+    "@types/stream-buffers": "3.0.x",
     "bplist-parser": "0.3.x",
     "esbuild": "0.28.x",
     "eslint": "10.10.x",
     "globals": "17.12.x",
+    "typescript": "6.0.x",
+    "typescript-eslint": "8.69.x",
     "vitest": "5.0.x"
   },
   "engines": {

@@ -47,7 +47,7 @@ describe('bplist-creator', function () {
   });
 });
 
-async function testFile(name) {
+async function testFile(name: string): Promise<void> {
   const file = path.join(dirname, name);
   const fileData = await fs.readFile(file);
   const dicts = await bplistParser.parseFile(file);
@@ -60,15 +60,15 @@ async function testFile(name) {
 
 // The parser returns plain JS values, but round-tripping byte-for-byte requires
 // telling the creator which of them were originally reals / utf16 strings.
-function applyOverrides(dicts) {
+function applyOverrides(dicts: any): void {
   const root = dicts && dicts[0];
   if (!root) {
     return;
   }
 
-  const asDouble = (value) => ({bplistOverride: true, type: 'double', value});
-  const asString = (value) => ({bplistOverride: true, type: 'string', value});
-  const asUtf16 = (value) => ({bplistOverride: true, type: 'string-utf16', value});
+  const asDouble = (value: any) => ({bplistOverride: true, type: 'double', value});
+  const asString = (value: any) => ({bplistOverride: true, type: 'string', value});
+  const asUtf16 = (value: any) => ({bplistOverride: true, type: 'string-utf16', value});
 
   // airplay
   if (root.loadedTimeRanges && root.loadedTimeRanges[0] && 'start' in root.loadedTimeRanges[0]) {
@@ -104,7 +104,7 @@ function applyOverrides(dicts) {
   }
 }
 
-function compareBuffers(actual, expected, name) {
+function compareBuffers(actual: Buffer, expected: Buffer, name: string): void {
   if (actual.length !== expected.length) {
     assert.fail(
       `${name}: buffer size mismatch. found: ${actual.length}, expected: ${expected.length}.\n` +
@@ -122,8 +122,8 @@ function compareBuffers(actual, expected, name) {
   }
 }
 
-function dump(buf1, buf2) {
-  const lines = [];
+function dump(buf1: Buffer, buf2: Buffer): string {
+  const lines: string[] = [];
   for (let offset = 0; offset < buf1.length || offset < buf2.length; offset += 16) {
     lines.push(
       offset.toString(16).padStart(8, '0') + ': ' +
@@ -135,7 +135,7 @@ function dump(buf1, buf2) {
   return lines.join('\n');
 }
 
-function hex(buf, offset) {
+function hex(buf: Buffer, offset: number): string {
   let out = '';
   for (let i = 0; i < 16; i++) {
     if (i === 8) {
@@ -146,7 +146,7 @@ function hex(buf, offset) {
   return out;
 }
 
-function ascii(buf, offset) {
+function ascii(buf: Buffer, offset: number): string {
   let out = '';
   for (let i = 0; i < 16; i++) {
     if (offset + i >= buf.length) {

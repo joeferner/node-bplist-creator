@@ -1,11 +1,21 @@
 import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
 import globals from 'globals';
 
-export default [
+export default tseslint.config(
   {
     ignores: ['dist/**', 'node_modules/**'],
   },
   js.configs.recommended,
+  {
+    files: ['**/*.ts'],
+    extends: [...tseslint.configs.recommended],
+    rules: {
+      // Creating plists is inherently dynamic (arbitrary nested dicts/arrays
+      // of unknown shape); `any` is the honest type here, not a shortcut.
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
   {
     languageOptions: {
       ecmaVersion: 2022,
@@ -34,11 +44,8 @@ export default [
       'no-unneeded-ternary': 'error',
       'no-useless-concat': 'error',
       'no-useless-return': 'error',
-      // Warnings, not errors: the creator still uses function-scoped `var`
-      // throughout. Converting is worth doing, but block scoping can change
-      // behaviour subtly, so it should land as its own reviewed change.
-      'no-var': 'warn',
-      'prefer-const': 'warn',
+      'no-var': 'error',
+      'prefer-const': 'error',
       'prefer-promise-reject-errors': 'error',
       'radix': 'error',
     },
@@ -51,4 +58,4 @@ export default [
       },
     },
   },
-];
+);
