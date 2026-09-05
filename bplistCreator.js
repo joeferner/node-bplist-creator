@@ -18,10 +18,6 @@ module.exports = function(dicts) {
     console.log('create', require('util').inspect(dicts, false, 10));
   }
 
-  if (dicts instanceof Array && dicts.length === 1) {
-    dicts = dicts[0];
-  }
-
   var entries = toEntries(dicts);
   if (debug) {
     console.log('entries', entries);
@@ -178,32 +174,35 @@ module.exports = function(dicts) {
       console.log('0x' + buffer.size().toString(16), 'writeNumber', entry.value, ' (type: ' + entry.type + ')', '(id: ' + entry.id + ')');
     }
 
-    if (typeof entry.value === 'bigint') {
-      var width = 16;
-      var hex = entry.value.toString(width);
-      var buf = Buffer.from(hex.padStart(width * 2, '0').slice(0, width * 2), 'hex');
-      writeByte(0x14);
-      buffer.write(buf);
-    } else if (entry.type !== 'double' && parseFloat(entry.value).toFixed() == entry.value) {
-      if (entry.value < 0) {
-        writeByte(0x13);
-        writeBytes(entry.value, 8, true);
-      } else if (entry.value <= 0xff) {
-        writeByte(0x10);
-        writeBytes(entry.value, 1);
-      } else if (entry.value <= 0xffff) {
-        writeByte(0x11);
-        writeBytes(entry.value, 2);
-      } else if (entry.value <= 0xffffffff) {
-        writeByte(0x12);
-        writeBytes(entry.value, 4);
-      } else {
-        writeByte(0x13);
-        writeBytes(entry.value, 8);
-      }
+    if (entry.type !== 'double' && isIntegerValue(entry.value)) {
+      writeInteger(entry.value);
     } else {
       writeByte(0x23);
       writeDouble(entry.value);
+    }
+  }
+
+  function writeInteger(value) {
+    var integer = toBigInt(value);
+
+    if (integer < 0n) {
+      writeByte(0x13);
+      writeBytes(integer, 8, true);
+    } else if (integer <= 0xffn) {
+      writeByte(0x10);
+      writeBytes(integer, 1);
+    } else if (integer <= 0xffffn) {
+      writeByte(0x11);
+      writeBytes(integer, 2);
+    } else if (integer <= 0xffffffffn) {
+      writeByte(0x12);
+      writeBytes(integer, 4);
+    } else if (integer <= 0x7fffffffffffffffn) {
+      writeByte(0x13);
+      writeBytes(integer, 8);
+    } else {
+      writeByte(0x14);
+      writeBytes(integer, 16);
     }
   }
 
@@ -298,21 +297,52 @@ module.exports = function(dicts) {
     writeBytes(id, idSizeInBytes);
   }
 
-  function writeBytes(value, bytes, is_signedint) {
-    // write low-order bytes big-endian style
-    var buf = Buffer.alloc(bytes);
-    var z = 0;
+  function writeBytes(value, bytes, isSignedInt) {
+    var integer = toBigInt(value);
+    var bits = BigInt(bytes * 8);
+    var limit = 1n << bits;
 
-    // javascript doesn't handle large numbers
-    while (bytes > 4) {
-      buf[z++] = is_signedint ? 0xff : 0;
-      bytes--;
+    if (isSignedInt) {
+      var signedLimit = 1n << (bits - 1n);
+      if (integer < -signedLimit || integer >= signedLimit) {
+        throw new Error('integer out of range for ' + bytes + ' signed bytes: ' + value);
+      }
+      if (integer < 0n) {
+        integer = limit + integer;
+      }
+    } else if (integer < 0n || integer >= limit) {
+      throw new Error('integer out of range for ' + bytes + ' unsigned bytes: ' + value);
     }
 
+    var buf = Buffer.alloc(bytes);
     for (var i = bytes - 1; i >= 0; i--) {
-      buf[z++] = value >> (8 * i);
+      buf[i] = Number(integer & 0xffn);
+      integer >>= 8n;
     }
     buffer.write(buf);
+  }
+
+  function isIntegerValue(value) {
+    if (typeof value === 'bigint') {
+      return true;
+    }
+    if (typeof value === 'number') {
+      return isFinite(value) && Math.floor(value) === value;
+    }
+    if (typeof value === 'string') {
+      return /^-?\d+$/.test(value);
+    }
+    return value && typeof value.toString === 'function' && /^-?\d+$/.test(value.toString());
+  }
+
+  function toBigInt(value) {
+    if (typeof value === 'bigint') {
+      return value;
+    }
+    if (typeof value === 'number') {
+      return BigInt(value);
+    }
+    return BigInt(value.toString());
   }
 
   function mustBeUtf16(string) {
