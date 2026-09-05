@@ -24,5 +24,8 @@
   },
   "dependencies": {
     "stream-buffers": "2.2.x"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
