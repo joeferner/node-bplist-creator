@@ -49,7 +49,7 @@ export default function bplistCreator(dicts) {
         return;
       }
       if (entry.type === 'string') {
-        if (!entry.bplistOverride && strings.hasOwnProperty(entry.value)) {
+        if (!entry.bplistOverride && Object.prototype.hasOwnProperty.call(strings, entry.value)) {
           entry.type = 'stringref';
           entry.id = strings[entry.value];
         } else {
@@ -149,7 +149,11 @@ export default function bplistCreator(dicts) {
 
   function writeDate(entry) {
     writeByte(0x33);
-    var date = (Date.parse(entry.value)/1000) - 978307200
+    var timestamp = entry.value instanceof Date ? entry.value.getTime() : Date.parse(entry.value);
+    if (!isFinite(timestamp)) {
+      throw new Error('invalid date: ' + entry.value);
+    }
+    var date = (timestamp / 1000) - 978307200;
     writeDouble(date)
   }
 
@@ -210,8 +214,10 @@ export default function bplistCreator(dicts) {
       console.log('0x' + buffer.size().toString(16), 'writeUID', entry.value, ' (type: ' + entry.type + ')', '(id: ' + entry.id + ')');
     }
 
-    writeIntHeader(0x8, 0x0);
-    writeID(entry.value);
+    var value = toBigInt(entry.value);
+    var bytes = computeUIDSizeInBytes(value);
+    writeByte(0x80 | (bytes - 1));
+    writeBytes(value, bytes);
   }
 
   function writeArray(entry) {
@@ -345,7 +351,7 @@ export default function bplistCreator(dicts) {
   }
 
   function mustBeUtf16(string) {
-    return Buffer.byteLength(string, 'utf8') != string.length;
+    return Buffer.byteLength(string, 'utf8') !== string.length;
   }
 }
 
@@ -378,7 +384,7 @@ function toEntries(dicts) {
           value: dicts
         }
       ]
-    } else if (Object.keys(dicts).length == 1 && typeof(dicts.UID) === 'number') {
+    } else if (Object.keys(dicts).length === 1 && (typeof(dicts.UID) === 'number' || typeof(dicts.UID) === 'bigint')) {
       return [
         {
           type: 'UID',
@@ -484,6 +490,25 @@ function computeIdSizeInBytes(numberOfIds) {
     return 2;
   }
   return 4;
+}
+
+function computeUIDSizeInBytes(value) {
+  if (value < 0n) {
+    throw new Error('UID out of range: ' + value);
+  }
+  if (value <= 0xffn) {
+    return 1;
+  }
+  if (value <= 0xffffn) {
+    return 2;
+  }
+  if (value <= 0xffffffffn) {
+    return 4;
+  }
+  if (value <= 0xffffffffffffffffn) {
+    return 8;
+  }
+  throw new Error('UID out of range: ' + value);
 }
 
 // Kept as a property of the default export so CommonJS consumers can continue
