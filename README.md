@@ -1,6 +1,8 @@
 bplist-creator
 ==============
 
+[![CI](https://github.com/joeferner/node-bplist-creator/actions/workflows/ci.yml/badge.svg)](https://github.com/joeferner/node-bplist-creator/actions/workflows/ci.yml)
+
 Binary Mac OS X Plist (property list) creator.
 
 ## Installation
