@@ -13,10 +13,22 @@ $ npm install bplist-creator
 
 ## Quick Examples
 
-```javascript
-var bplist = require('bplist-creator');
+This package ships both ES module and CommonJS builds, so either import style works.
 
-var buffer = bplist({
+```javascript
+// ESM
+import bplist from 'bplist-creator';
+
+const buffer = bplist({
+  key1: [1, 2, 3]
+});
+```
+
+```javascript
+// CommonJS
+const bplist = require('bplist-creator');
+
+const buffer = bplist({
   key1: [1, 2, 3]
 });
 ```
@@ -31,14 +43,20 @@ If you need to force a value to be written with the `real` type pass
 an instance of `Real`.
 
 ```javascript
-var buffer = bplist({
-  backgroundRed: new bplist.Real(1),
-  backgroundGreen: new bplist.Real(0),
-  backgroundBlue: new bplist.Real(0)
+// ESM: import bplist, { Real } from 'bplist-creator';
+// CommonJS: Real is also available as bplist.Real
+const buffer = bplist({
+  backgroundRed: new Real(1),
+  backgroundGreen: new Real(0),
+  backgroundBlue: new Real(0)
 });
 ```
 
 In `xml` the corresponding tags is `<integer>` and `<real>`.
+
+## Requirements
+
+Node.js 20.19 or newer.
 
 ## License
 
