@@ -39,6 +39,31 @@ describe('bplist-creator', function () {
     );
   });
 
+  it('UID payload widths', function () {
+    const buf = bplistCreator([
+      {UID: 255},
+      {UID: 256},
+      {UID: 65536},
+      {UID: 4294967296n}
+    ]);
+
+    assert.notStrictEqual(buf.indexOf(Buffer.from([0x80, 0xff])), -1, 'expected 255 to be written as a 1-byte UID');
+    assert.notStrictEqual(buf.indexOf(Buffer.from([0x81, 0x01, 0x00])), -1, 'expected 256 to be written as a 2-byte UID');
+    assert.notStrictEqual(buf.indexOf(Buffer.from([0x83, 0x00, 0x01, 0x00, 0x00])), -1, 'expected 65536 to be written as a 4-byte UID');
+    assert.notStrictEqual(
+      buf.indexOf(Buffer.from([0x87, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00])),
+      -1,
+      'expected 4294967296 to be written as an 8-byte UID'
+    );
+  });
+
+  it('early Date object', function () {
+    const buf = bplistCreator([new Date('0001-01-01T00:00:00Z')]);
+    const dicts = bplistParser.parseBuffer(buf);
+
+    assert.strictEqual((dicts[0] as Date[])[0].toISOString(), '0001-01-01T00:00:00.000Z');
+  });
+
   it('top-level one-item array', function () {
     const buf = bplistCreator(['only-item']);
     const dicts = bplistParser.parseBuffer(buf);
