@@ -37,6 +37,22 @@ module.exports = {
     testFile(test, file);
   },
 
+  '64-bit integer payload': function(test) {
+    var buf = bplistCreator([4294967296]);
+    var integerObject = Buffer.from([0x13, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00]);
+
+    test.notEqual(buf.indexOf(integerObject), -1, 'expected 4294967296 to be written as an 8-byte integer');
+    test.done();
+  },
+
+  'top-level one-item array': function(test) {
+    var buf = bplistCreator(['only-item']);
+    var dicts = bplistParser.parseBuffer(buf);
+
+    test.deepEqual(dicts, [['only-item']]);
+    test.done();
+  },
+
 //  'utf16': function(test) {
 //    var file = path.join(__dirname, "utf16.bplist");
 //    testFile(test, file);
@@ -128,7 +144,7 @@ function testFile(test, file) {
         };
       }
 
-      var buf = bplistCreator(dicts);
+      var buf = bplistCreator(dicts[0]);
       compareBuffers(test, buf, fileData);
       return test.done();
     });
