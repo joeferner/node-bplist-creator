@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'vitest';
-import bplistParser from 'bplist-parser';
+import * as bplistParser from 'bplist-parser';
 import bplistCreator from '../bplistCreator.js';
 
 const dirname = import.meta.dirname;
@@ -100,7 +100,7 @@ function applyOverrides(dicts: any): void {
 
   // integer
   if ('int64item' in root) {
-    root.int64item = {bplistOverride: true, type: 'number', value: root.int64item.value};
+    root.int64item = {bplistOverride: true, type: 'number', value: root.int64item};
   }
 }
 

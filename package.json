@@ -32,7 +32,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nearinfinity/node-bplist-creator.git"
+    "url": "https://github.com/joeferner/node-bplist-creator.git"
   },
   "keywords": [
     "bplist",
@@ -48,7 +48,7 @@
     "@eslint/js": "10.0.x",
     "@types/node": "26.4.x",
     "@types/stream-buffers": "3.0.x",
-    "bplist-parser": "0.3.x",
+    "bplist-parser": "0.5.x",
     "esbuild": "0.28.x",
     "eslint": "10.10.x",
     "globals": "17.12.x",
