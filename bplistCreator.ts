@@ -18,7 +18,7 @@ export class Real {
 
 type DictEntry = { type: 'dict'; entryKeys: Entry[]; entryValues: Entry[]; id?: number };
 type NumberEntry = { type: 'number' | 'double'; value: number | bigint; id?: number; bplistOverride?: true };
-type UidEntry = { type: 'UID'; value: number; id?: number };
+type UidEntry = { type: 'UID'; value: number | bigint; id?: number };
 type ArrayEntry = { type: 'array'; entries: Entry[]; id?: number };
 type BooleanEntry = { type: 'boolean'; value: boolean; id?: number };
 type StringEntry = {
@@ -27,7 +27,7 @@ type StringEntry = {
   id?: number;
   bplistOverride?: true;
 };
-type DateEntry = { type: 'date'; value: Date; id?: number };
+type DateEntry = { type: 'date'; value: Date | string; id?: number };
 type DataEntry = { type: 'data'; value: Buffer; id?: number };
 
 type Entry = DictEntry | NumberEntry | UidEntry | ArrayEntry | BooleanEntry | StringEntry | DateEntry | DataEntry;
@@ -177,7 +177,11 @@ const bplistCreator = function bplistCreator(dicts: PlistJsObj): Buffer {
 
   function writeDate(entry: DateEntry) {
     writeByte(0x33);
-    const date = (Date.parse(entry.value.toString())/1000) - 978307200;
+    const timestamp = entry.value instanceof Date ? entry.value.getTime() : Date.parse(entry.value);
+    if (!isFinite(timestamp)) {
+      throw new Error('invalid date: ' + entry.value);
+    }
+    const date = (timestamp / 1000) - 978307200;
     writeDouble(date);
   }
 
@@ -238,8 +242,10 @@ const bplistCreator = function bplistCreator(dicts: PlistJsObj): Buffer {
       console.log('0x' + buffer.size().toString(16), 'writeUID', entry.value, ' (type: ' + entry.type + ')', '(id: ' + entry.id + ')');
     }
 
-    writeIntHeader(0x8, 0x0);
-    writeID(entry.value);
+    const value = toBigInt(entry.value);
+    const bytes = computeUIDSizeInBytes(value);
+    writeByte(0x80 | (bytes - 1));
+    writeBytes(value, bytes);
   }
 
   function writeArray(entry: ArrayEntry) {
@@ -373,7 +379,7 @@ const bplistCreator = function bplistCreator(dicts: PlistJsObj): Buffer {
   }
 
   function mustBeUtf16(string: string) {
-    return Buffer.byteLength(string, 'utf8') != string.length;
+    return Buffer.byteLength(string, 'utf8') !== string.length;
   }
 } as BplistCreator;
 
@@ -406,7 +412,7 @@ function toEntries(dicts: any): Entry[] {
           value: dicts
         }
       ];
-    } else if (Object.keys(dicts).length == 1 && typeof(dicts.UID) === 'number') {
+    } else if (Object.keys(dicts).length === 1 && (typeof(dicts.UID) === 'number' || typeof(dicts.UID) === 'bigint')) {
       return [
         {
           type: 'UID',
@@ -514,6 +520,25 @@ function computeIdSizeInBytes(numberOfIds: number): number {
     return 2;
   }
   return 4;
+}
+
+function computeUIDSizeInBytes(value: bigint): number {
+  if (value < 0n) {
+    throw new Error('UID out of range: ' + value);
+  }
+  if (value <= 0xffn) {
+    return 1;
+  }
+  if (value <= 0xffffn) {
+    return 2;
+  }
+  if (value <= 0xffffffffn) {
+    return 4;
+  }
+  if (value <= 0xffffffffffffffffn) {
+    return 8;
+  }
+  throw new Error('UID out of range: ' + value);
 }
 
 // Kept as a property of the default export so CommonJS consumers can continue
