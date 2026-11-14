@@ -11,7 +11,7 @@ const common = {
   entryPoints: [entry],
   bundle: true,
   platform: 'node',
-  target: 'node20.19',
+  target: 'node22.12',
   packages: 'external',
   sourcemap: true,
 };

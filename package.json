@@ -46,17 +46,17 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.x",
-    "@types/node": "26.4.x",
+    "@types/node": "26.6.x",
     "@types/stream-buffers": "3.0.x",
-    "bplist-parser": "0.5.x",
+    "bplist-parser": "0.6.x",
     "esbuild": "0.28.x",
-    "eslint": "10.10.x",
-    "globals": "17.12.x",
+    "eslint": "10.15.x",
+    "globals": "17.14.x",
     "typescript": "6.0.x",
-    "typescript-eslint": "8.69.x",
-    "vitest": "5.0.x"
+    "typescript-eslint": "8.72.x",
+    "vitest": "5.1.x"
   },
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.12.0"
   }
 }
