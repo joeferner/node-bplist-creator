@@ -56,7 +56,7 @@ In `xml` the corresponding tags is `<integer>` and `<real>`.
 
 ## Requirements
 
-Node.js 20.19 or newer.
+Node.js 22.12 or newer.
 
 ## License
 
