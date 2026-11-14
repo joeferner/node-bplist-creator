@@ -360,7 +360,10 @@ const bplistCreator = function bplistCreator(dicts: PlistJsObj): Buffer {
       return true;
     }
     if (typeof value === 'number') {
-      return isFinite(value) && Math.floor(value) === value;
+      // Doubles at or beyond 2^53 are always whole but no longer exact, and
+      // may exceed the 64/128-bit integer range, so write them as reals. Pass
+      // a BigInt to force a large value to be encoded as an integer.
+      return Number.isSafeInteger(value);
     }
     if (typeof value === 'string') {
       return /^-?\d+$/.test(value);

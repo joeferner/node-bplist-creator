@@ -39,6 +39,24 @@ describe('bplist-creator', function () {
     );
   });
 
+  it('large whole-valued numbers are written as reals', function () {
+    const values = [2 ** 53, 1e20, 1e39, 1.5e300, Number.MAX_VALUE, -1e19, -1e300];
+    const [parsed] = bplistParser.parseBuffer(bplistCreator(values));
+    assert.deepStrictEqual(parsed, values);
+
+    const buf = bplistCreator([1e20]);
+    const realObject = Buffer.alloc(9);
+    realObject[0] = 0x23;
+    realObject.writeDoubleBE(1e20, 1);
+    assert.notStrictEqual(buf.indexOf(realObject), -1, 'expected 1e20 to be written as an 8-byte real');
+  });
+
+  it('safe integers and BigInts are written as integers', function () {
+    const values = [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, 2n ** 63n - 1n];
+    const [parsed] = bplistParser.parseBuffer(bplistCreator(values));
+    assert.deepStrictEqual(parsed, values);
+  });
+
   it('UID payload widths', function () {
     const buf = bplistCreator([
       {UID: 255},
