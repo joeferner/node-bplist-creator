@@ -39,6 +39,17 @@ describe('bplist-creator', function () {
     );
   });
 
+  it('skips null and undefined object values', function () {
+    const buf = bplistCreator({a: null, b: 1, c: undefined, nested: {d: null, e: 'x'}, list: [{f: undefined}]});
+    const [parsed] = bplistParser.parseBuffer(buf);
+    assert.deepStrictEqual(parsed, {b: 1, nested: {e: 'x'}, list: [{}]});
+  });
+
+  it('throws a clear error for null and undefined array items', function () {
+    assert.throws(() => bplistCreator([1, null]), /cannot encode null: binary plists have no null type/);
+    assert.throws(() => bplistCreator([undefined]), /cannot encode undefined: binary plists have no null type/);
+  });
+
   it('UID payload widths', function () {
     const buf = bplistCreator([
       {UID: 255},

@@ -33,6 +33,12 @@ const buffer = bplist({
 });
 ```
 
+## null and undefined
+
+Binary plists have no null type. Object keys whose value is `null` or
+`undefined` are left out of the output, as `JSON.stringify` does. A `null` or
+`undefined` array item or top-level value throws a `TypeError`.
+
 ## Real/Double/Float handling
 
 Javascript don't have different types for `1` and `1.0`. This package
