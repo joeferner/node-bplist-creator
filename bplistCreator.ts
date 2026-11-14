@@ -387,6 +387,10 @@ const bplistCreator = function bplistCreator(dicts: PlistJsObj): Buffer {
 } as BplistCreator;
 
 function toEntries(dicts: any): Entry[] {
+  if (dicts === null || dicts === undefined) {
+    throw new TypeError('cannot encode ' + dicts + ': binary plists have no null type');
+  }
+
   if (dicts.bplistOverride) {
     return [dicts];
   }
@@ -489,12 +493,17 @@ function toEntriesObject(dict: Record<string, any>): Entry[] {
     }
   ];
   const dictEntry = results[0] as DictEntry;
-  Object.keys(dict).forEach(function(key) {
+  // Plists have no null type, so drop keys whose value is null or undefined,
+  // the same way JSON.stringify omits undefined properties.
+  const keys = Object.keys(dict).filter(function(key) {
+    return dict[key] !== null && dict[key] !== undefined;
+  });
+  keys.forEach(function(key) {
     const entryKey = toEntries(key);
     dictEntry.entryKeys.push(entryKey[0]);
     results = results.concat(entryKey[0]);
   });
-  Object.keys(dict).forEach(function(key) {
+  keys.forEach(function(key) {
     const entryValue = toEntries(dict[key]);
     dictEntry.entryValues.push(entryValue[0]);
     results = results.concat(entryValue);
