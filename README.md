@@ -58,6 +58,10 @@ const buffer = bplist({
 });
 ```
 
+Whole numbers outside the safe integer range (beyond `Number.MAX_SAFE_INTEGER`,
+such as `1e20`) are written as `real`, since a JavaScript number can't hold them
+exactly. Pass a `BigInt` to write a large value as an `integer`.
+
 In `xml` the corresponding tags is `<integer>` and `<real>`.
 
 ## Requirements
