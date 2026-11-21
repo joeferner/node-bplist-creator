@@ -386,6 +386,27 @@ const bplistCreator = function bplistCreator(dicts: PlistJsObj): Buffer {
   }
 } as BplistCreator;
 
+function getUidValue(value: Record<any, any>): number | bigint | undefined {
+  const keys = Object.keys(value);
+  if (keys.length !== 1) {
+    return undefined;
+  }
+  for (const key of ['UID', 'CF$UID']) {
+    if (!Object.prototype.hasOwnProperty.call(value, key)) {
+      continue;
+    }
+    const uid = value[key];
+    if (typeof uid === 'bigint') {
+      return uid >= 0n ? uid : undefined;
+    }
+    if (typeof uid === 'number' && Number.isSafeInteger(uid) && uid >= 0) {
+      return uid;
+    }
+    return undefined;
+  }
+  return undefined;
+}
+
 function toEntries(dicts: any): Entry[] {
   if (dicts === null || dicts === undefined) {
     throw new TypeError('cannot encode ' + dicts + ': binary plists have no null type');
@@ -419,14 +440,16 @@ function toEntries(dicts: any): Entry[] {
           value: dicts
         }
       ];
-    } else if (Object.keys(dicts).length === 1 && (typeof(dicts.UID) === 'number' || typeof(dicts.UID) === 'bigint')) {
-      return [
-        {
-          type: 'UID',
-          value: dicts.UID
-        }
-      ];
     } else {
+      const uidValue = getUidValue(dicts);
+      if (uidValue !== undefined) {
+        return [
+          {
+            type: 'UID',
+            value: uidValue
+          }
+        ];
+      }
       return toEntriesObject(dicts);
     }
   } else if (typeof(dicts) === 'string') {
