@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import vm from 'node:vm';
 import { describe, it } from 'vitest';
 import * as bplistParser from 'bplist-parser';
 import bplistCreator from '../bplistCreator.js';
@@ -18,6 +19,22 @@ describe('bplist-creator', function () {
 
   it('binary data', async function () {
     await testFile('binaryData.bplist');
+  });
+
+  it('accepts ArrayBuffers and ArrayBuffer views as data', function () {
+    const expected = Buffer.from([0, 1, 2, 3]);
+    const crossRealmBuffer = vm.runInNewContext('new Uint8Array([0, 1, 2, 3]).buffer');
+    const views = [
+      new Uint8Array([0, 1, 2, 3]),
+      new Uint8Array([9, 0, 1, 2, 3, 9]).subarray(1, 5),
+      new DataView(new Uint8Array([9, 0, 1, 2, 3, 9]).buffer, 1, 4)
+    ];
+
+    for (const value of [crossRealmBuffer, ...views]) {
+      const [parsed] = bplistParser.parseBuffer(bplistCreator(value as any));
+      assert.ok(Buffer.isBuffer(parsed));
+      assert.deepStrictEqual(parsed, expected);
+    }
   });
 
   it('airplay', async function () {
