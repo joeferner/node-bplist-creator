@@ -397,6 +397,33 @@ function toBuffer(value: ArrayBuffer | ArrayBufferView): Buffer {
   return Buffer.from(value.buffer, value.byteOffset, value.byteLength);
 }
 
+function getUidValue(value: Record<any, any>): number | bigint | undefined {
+  const keys = Object.keys(value);
+  if (keys.length !== 1) {
+    return undefined;
+  }
+  for (const key of ['UID', 'CF$UID']) {
+    if (!Object.prototype.hasOwnProperty.call(value, key)) {
+      continue;
+    }
+    const uid = value[key];
+    if (typeof uid === 'bigint') {
+      if (uid < 0n) {
+        throw new RangeError('UID out of range: ' + uid);
+      }
+      return uid;
+    }
+    if (typeof uid === 'number') {
+      if (!Number.isSafeInteger(uid) || uid < 0) {
+        throw new RangeError('UID out of range: ' + uid);
+      }
+      return uid;
+    }
+    return undefined;
+  }
+  return undefined;
+}
+
 function toEntries(dicts: any): Entry[] {
   if (dicts === null || dicts === undefined) {
     throw new TypeError('cannot encode ' + dicts + ': binary plists have no null type');
@@ -437,14 +464,16 @@ function toEntries(dicts: any): Entry[] {
           value: dicts
         }
       ];
-    } else if (Object.keys(dicts).length === 1 && (typeof(dicts.UID) === 'number' || typeof(dicts.UID) === 'bigint')) {
-      return [
-        {
-          type: 'UID',
-          value: dicts.UID
-        }
-      ];
     } else {
+      const uidValue = getUidValue(dicts);
+      if (uidValue !== undefined) {
+        return [
+          {
+            type: 'UID',
+            value: uidValue
+          }
+        ];
+      }
       return toEntriesObject(dicts);
     }
   } else if (typeof(dicts) === 'string') {

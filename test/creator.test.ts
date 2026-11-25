@@ -103,6 +103,41 @@ describe('bplist-creator', function () {
     );
   });
 
+  it('accepts CF$UID dictionaries as UIDs', function () {
+    const [values] = bplistParser.parseBuffer(bplistCreator([
+      {'CF$UID': 1},
+      {'CF$UID': 255},
+      {'CF$UID': 65536},
+      {plain: 1, uid: {'CF$UID': 42}}
+    ]));
+
+    assert.deepStrictEqual(values.slice(0, 3).map((value: any) => value.UID), [1, 255, 65536]);
+    assert.strictEqual(values[3].plain, 1);
+    assert.strictEqual(values[3].uid.UID, 42);
+  });
+
+  it('throws on invalid UID values', function () {
+    for (const value of [
+      {UID: Number.MAX_SAFE_INTEGER + 2},
+      {UID: -1},
+      {UID: 1.5},
+      {'CF$UID': -1n},
+      {'CF$UID': 2n ** 64n}
+    ]) {
+      assert.throws(() => bplistCreator([value]), /UID out of range/);
+    }
+  });
+
+  it('encodes non-UID-shaped dictionaries as ordinary dictionaries', function () {
+    const [values] = bplistParser.parseBuffer(bplistCreator([
+      {'CF$UID': 7, other: 1},
+      {UID: 'abc'}
+    ]));
+
+    assert.deepStrictEqual(values[0], {'CF$UID': 7, other: 1});
+    assert.deepStrictEqual(values[1], {UID: 'abc'});
+  });
+
   it('early Date object', function () {
     const buf = bplistCreator([new Date('0001-01-01T00:00:00Z')]);
     const dicts = bplistParser.parseBuffer(buf);
