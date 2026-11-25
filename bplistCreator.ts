@@ -386,6 +386,17 @@ const bplistCreator = function bplistCreator(dicts: PlistJsObj): Buffer {
   }
 } as BplistCreator;
 
+function isBinaryBufferSource(value: unknown): value is ArrayBuffer | ArrayBufferView {
+  return util.types.isArrayBuffer(value) || ArrayBuffer.isView(value);
+}
+
+function toBuffer(value: ArrayBuffer | ArrayBufferView): Buffer {
+  if (util.types.isArrayBuffer(value)) {
+    return Buffer.from(value);
+  }
+  return Buffer.from(value.buffer, value.byteOffset, value.byteLength);
+}
+
 function toEntries(dicts: any): Entry[] {
   if (dicts === null || dicts === undefined) {
     throw new TypeError('cannot encode ' + dicts + ': binary plists have no null type');
@@ -402,6 +413,13 @@ function toEntries(dicts: any): Entry[] {
       {
         type: 'data',
         value: dicts
+      }
+    ];
+  } else if (isBinaryBufferSource(dicts)) {
+    return [
+      {
+        type: 'data',
+        value: toBuffer(dicts)
       }
     ];
   } else if (dicts instanceof Real) {
