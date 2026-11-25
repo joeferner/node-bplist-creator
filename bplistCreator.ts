@@ -408,9 +408,15 @@ function getUidValue(value: Record<any, any>): number | bigint | undefined {
     }
     const uid = value[key];
     if (typeof uid === 'bigint') {
-      return uid >= 0n ? uid : undefined;
+      if (uid < 0n) {
+        throw new RangeError('UID out of range: ' + uid);
+      }
+      return uid;
     }
-    if (typeof uid === 'number' && Number.isSafeInteger(uid) && uid >= 0) {
+    if (typeof uid === 'number') {
+      if (!Number.isSafeInteger(uid) || uid < 0) {
+        throw new RangeError('UID out of range: ' + uid);
+      }
       return uid;
     }
     return undefined;
