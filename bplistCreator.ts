@@ -386,6 +386,17 @@ const bplistCreator = function bplistCreator(dicts: PlistJsObj): Buffer {
   }
 } as BplistCreator;
 
+function isBinaryBufferSource(value: unknown): value is ArrayBuffer | ArrayBufferView {
+  return util.types.isArrayBuffer(value) || ArrayBuffer.isView(value);
+}
+
+function toBuffer(value: ArrayBuffer | ArrayBufferView): Buffer {
+  if (util.types.isArrayBuffer(value)) {
+    return Buffer.from(value);
+  }
+  return Buffer.from(value.buffer, value.byteOffset, value.byteLength);
+}
+
 function getUidValue(value: Record<any, any>): number | bigint | undefined {
   const keys = Object.keys(value);
   if (keys.length !== 1) {
@@ -423,6 +434,13 @@ function toEntries(dicts: any): Entry[] {
       {
         type: 'data',
         value: dicts
+      }
+    ];
+  } else if (isBinaryBufferSource(dicts)) {
+    return [
+      {
+        type: 'data',
+        value: toBuffer(dicts)
       }
     ];
   } else if (dicts instanceof Real) {
